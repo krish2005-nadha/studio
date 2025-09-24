@@ -29,7 +29,7 @@ const GenerateRouteSuggestionOutputSchema = z.object({
   routeSuggestion: z
     .string()
     .describe(
-      'A detailed and helpful route suggestion considering the weather.'
+      'A detailed and helpful route suggestion considering the weather. Use Markdown for formatting, such as bolding key advice.'
     ),
 });
 export type GenerateRouteSuggestionOutput = z.infer<
@@ -46,21 +46,22 @@ const prompt = ai.definePrompt({
   name: 'generateRouteSuggestionPrompt',
   input: {schema: GenerateRouteSuggestionInputSchema},
   output: {schema: GenerateRouteSuggestionOutputSchema},
-  prompt: `You are an AI assistant providing travel advice. Based on the start and end locations, and the weather safety assessment, generate a helpful route suggestion.
+  prompt: `You are an AI travel advisor providing route suggestions based on weather.
 
-  Journey Details:
-  - Start: {{startLocation}}
-  - End: {{endLocation}}
+  **Journey Details:**
+  - **Start:** {{startLocation}}
+  - **End:** {{endLocation}}
 
-  Weather Assessment:
-  - Safety Level: {{safetyBadge}}
-  - Details: {{reasoning}}
+  **Weather Assessment:**
+  - **Safety Level:** {{safetyBadge}}
+  - **Details:** {{reasoning}}
 
-  Your Suggestion:
-  - If the safety level is 'Postpone', strongly advise against travel and explain why, referencing the hazardous conditions.
-  - If 'Risky', suggest specific precautions (e.g., "drive slowly", "check for road closures", "pack an emergency kit") and mention safer alternative times if possible.
-  - If 'Safe', provide a cheerful and encouraging message, perhaps suggesting scenic spots if applicable (be creative).
-  - Do not provide turn-by-turn directions. Focus on high-level advice.
+  **Your Task:**
+  Generate a helpful, high-level route suggestion. **Do not provide turn-by-turn directions.** Focus on safety and weather-related advice. Use Markdown for emphasis.
+
+  - If the safety level is **'Postpone'**, strongly advise against travel. Clearly explain the dangers based on the weather conditions (e.g., "**Travel is not recommended** due to a high risk of flash floods and dangerous winds.").
+  - If **'Risky'**, suggest a cautious approach. Provide specific, actionable precautions (e.g., "Exercise caution. **Drive slowly** and maintain a safe following distance. Be prepared for **potential road closures** and consider packing an emergency kit with blankets and water."). Mention if alternative, safer travel times might exist.
+  - If **'Safe'**, provide a positive and encouraging message. You can be creative and suggest scenic points of interest if applicable (e.g., "Conditions look great for your trip! Enjoy the clear skies. You might consider a brief stop at Vista Point for a beautiful view.").
   `,
 });
 

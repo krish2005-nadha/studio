@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { ActionResult } from '@/app/actions';
+import type { FormSchema, WeatherData } from '@/app/schemas';
 import { getSafetyAnalysis } from '@/app/actions';
 import { WeatherForm } from '@/components/sky-shield/weather-form';
 import { ResultSkeletons } from '@/components/sky-shield/loading-skeletons';
@@ -10,13 +10,46 @@ import { SafetyAssessment } from './safety-assessment';
 import { RoutePlanner } from './route-planner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
-import type { FormSchema, WeatherData } from '@/app/schemas';
+import type { ActionResult } from '@/app/schemas';
 
-function getRandomInt(min: number, max: number) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+// This function is now defined inside the component to avoid hydration issues
+// and is only called on the client side.
+function getSimulatedWeatherData(): WeatherData {
+  const getRandomInt = (min: number, max: number) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+  
+  const temperature = getRandomInt(-5, 35);
+  const rainProbability = Math.random();
+  const windSpeed = getRandomInt(0, 100);
+
+  let forecast = 'Clear skies.';
+  if (rainProbability > 0.7) {
+    forecast = 'Heavy rain and thunderstorms expected.';
+  } else if (rainProbability > 0.3) {
+    forecast = 'Chance of scattered showers.';
+  }
+  if (windSpeed > 50) {
+    forecast += ' Strong winds are likely.';
+  } else if (windSpeed > 20) {
+    forecast += ' A bit breezy.';
+  }
+  if (temperature < 0) {
+    forecast += ' Freezing temperatures.';
+  } else if (temperature > 30) {
+    forecast += ' Very hot day.';
+  }
+
+  return {
+    temperature,
+    rainProbability,
+    windSpeed,
+    forecast,
+  };
 }
+
 
 export default function SkyShieldClient() {
   const [loading, setLoading] = useState(false);
@@ -31,52 +64,32 @@ export default function SkyShieldClient() {
     setLoading(true);
     setResult(null);
 
-    // Simulate weather prediction on the client
-    const temperature = getRandomInt(-5, 35);
-    const rainProbability = Math.random();
-    const windSpeed = getRandomInt(0, 100);
+    // Weather data is now simulated on the client side just before the API call
+    const weatherData = getSimulatedWeatherData();
 
-    let forecast = 'Clear skies.';
-    if (rainProbability > 0.7) {
-      forecast = 'Heavy rain and thunderstorms expected.';
-    } else if (rainProbability > 0.3) {
-      forecast = 'Chance of scattered showers.';
+    try {
+      const analysisResult = await getSafetyAnalysis(values, weatherData);
+      setResult(analysisResult);
+    } catch (error) {
+      console.error("Failed to get safety analysis:", error);
+      // Optionally, set an error state here to show a message to the user
+    } finally {
+      setLoading(false);
     }
-    if (windSpeed > 50) {
-      forecast += ' Strong winds are likely.';
-    } else if (windSpeed > 20) {
-      forecast += ' A bit breezy.';
-    }
-    if (temperature < 0) {
-      forecast += ' Freezing temperatures.';
-    } else if (temperature > 30) {
-      forecast += ' Very hot day.';
-    }
-
-    const weatherData: WeatherData = {
-      temperature,
-      rainProbability,
-      windSpeed,
-      forecast,
-    };
-
-    const analysisResult = await getSafetyAnalysis(values, weatherData);
-    setResult(analysisResult);
-    setLoading(false);
   };
   
   if (!isMounted) {
-    return <ResultSkeletons />;
+    return <div className="container mx-auto p-4 md:p-8"><ResultSkeletons /></div>;
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
       <div className="text-center mb-8 md:mb-12">
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter">
-          AI Weather Safety Planner
+          Welcome to SkyShield
         </h2>
-        <p className="mt-2 text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-          Enter your event or journey details to get an instant, AI-powered weather safety assessment.
+        <p className="mt-2 text-lg md:text-xl max-w-3xl mx-auto text-muted-foreground">
+          Planning a hike, a vacation, or a simple day out? Enter your destination and date, and our AI will analyze weather patterns to give you a personalized safety forecast. Know the likelihood of adverse conditions and travel with confidence.
         </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-8 xl:gap-12">
@@ -108,7 +121,7 @@ export default function SkyShieldClient() {
               >
                 <WeatherDisplay data={result.weather} summary={result.summary} />
                 <SafetyAssessment data={result.assessment} />
-                {result.route && <RoutePlanner data={result.route} />}
+                {result.route && <RoutePlanner data={result.route} safetyBadge={result.assessment.safetyBadge} />}
               </motion.div>
             )}
             {!loading && !result && (
