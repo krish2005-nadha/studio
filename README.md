@@ -35,7 +35,7 @@ The application's intelligence is driven by a clear data pipeline:
 
 3.  **AI Analysis (Genkit & Gemini):**
     *   The weather data (currently simulated) is passed to our AI backend, which is orchestrated by **Genkit**.
-    *   The `generateSafetyAssessment` flow uses the **Gemini model** to analyze the data and output a structured safety report.
+    *   The `generateSafetyAssessment` flow uses the **Gemini model** to analyze the data and output a structured safety report. The model wasn't "trained" on a specific dataset for this task; rather, we leverage its vast pre-trained knowledge by giving it a clear prompt and instructions on how to interpret the weather data according to our safety guidelines (`Safe`, `Risky`, `Postpone`).
     *   The `generateRouteSuggestion` flow uses Gemini's geographical knowledge to infer conditions along a route and provide a district-by-district travel advisory.
 
 4.  **Data Visualization:**
