@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { ActionResult } from '@/app/actions';
 import { getSafetyAnalysis } from '@/app/actions';
 import { WeatherForm } from '@/components/sky-shield/weather-form';
