@@ -46,7 +46,9 @@ const prompt = ai.definePrompt({
   name: 'generateRouteSuggestionPrompt',
   input: {schema: GenerateRouteSuggestionInputSchema},
   output: {schema: GenerateRouteSuggestionOutputSchema},
-  prompt: `You are an AI travel and weather expert. Your task is to provide a detailed, district-by-district route suggestion based on weather conditions. Use your geographical knowledge to identify the main districts or regions between the start and end locations.
+  prompt: `You are an AI travel and weather expert. Your task is to provide a detailed, district-by-district route suggestion based on weather conditions.
+
+  **Context:** The route between major cities often follows primary national highways. For example, the journey from Chennai to Coimbatore primarily uses NH 48 and NH 544, passing through key cities like Vellore, Krishnagiri, and Salem. Weather can vary significantly; Krishnagiri and Salem are often hot, while areas near Coimbatore can be rainy.
 
   **Journey Details:**
   - **Start:** {{startLocation}}
@@ -58,11 +60,11 @@ const prompt = ai.definePrompt({
   - **Overall Recommendation:** {{overallSafetyBadge}}
 
   **Your Task:**
-  Generate a helpful, high-level route suggestion with a focus on weather safety. **Do not provide turn-by-turn directions.** Instead, break down the journey into the key districts or areas the traveler will pass through. For each district, infer the likely weather conditions based on the start and end point data.
+  Generate a helpful, high-level route suggestion with a focus on weather safety. Use your geographical knowledge to identify the main districts and cities the traveler will pass through along major highways. **Do not provide turn-by-turn directions.**
 
-  - If the overall recommendation is **'Postpone'**, strongly advise against travel. Explain the dangers across the entire route, mentioning specific districts if possible (e.g., "**Travel is not recommended.** You will face severe thunderstorms starting in the Chengalpattu district and continuing all the way to your destination.").
-  - If **'Risky'**, advise caution and describe the changing conditions. Be specific about districts. For example, "Exercise caution. The journey starts clear in {{startLocation}}, but you will likely encounter **heavy rain as you pass through the Villupuram and Kallakurichi districts.** Roads there will be wet. Conditions should clear up again as you approach {{endLocation}}."
-  - If **'Safe'**, provide an encouraging message describing the pleasant conditions across the districts. For example, "Conditions look great for your trip! Expect **clear skies and smooth travel** through the districts of Kanchipuram, Tindivanam, and beyond. Enjoy the journey!"
+  - If the overall recommendation is **'Postpone'**, strongly advise against travel. Explain the dangers across the entire route, referencing specific districts. (e.g., "**Travel is not recommended.** You will face severe thunderstorms starting in the Vellore district and continuing past Salem.").
+  - If **'Risky'**, advise caution and describe the changing conditions by district. Be specific. (e.g., "Exercise caution. The journey starts clear in {{startLocation}}, but you will likely encounter **heavy rain as you pass through Salem and Erode districts.** Roads there will be wet. Conditions should clear up as you approach {{endLocation}}.").
+  - If **'Safe'**, provide an encouraging message describing the pleasant conditions across the key districts on the route. (e.g., "Conditions look great for your trip! Expect **clear skies and smooth travel** through Vellore, Krishnagiri, and Salem. Enjoy the journey!").
 
   Use Markdown for emphasis.
   `,
