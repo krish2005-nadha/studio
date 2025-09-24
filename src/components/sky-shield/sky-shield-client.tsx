@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ActionResult } from '@/app/actions';
 import { getSafetyAnalysis } from '@/app/actions';
 import { WeatherForm } from '@/components/sky-shield/weather-form';
@@ -10,7 +10,13 @@ import { SafetyAssessment } from './safety-assessment';
 import { RoutePlanner } from './route-planner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
-import type { FormSchema } from '@/app/schemas';
+import type { FormSchema, WeatherData } from '@/app/schemas';
+
+function getRandomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 export default function SkyShieldClient() {
   const [loading, setLoading] = useState(false);
@@ -19,7 +25,37 @@ export default function SkyShieldClient() {
   const handleFormSubmit = async (values: FormSchema) => {
     setLoading(true);
     setResult(null);
-    const analysisResult = await getSafetyAnalysis(values);
+
+    // Simulate weather prediction on the client
+    const temperature = getRandomInt(-5, 35);
+    const rainProbability = Math.random();
+    const windSpeed = getRandomInt(0, 100);
+
+    let forecast = 'Clear skies.';
+    if (rainProbability > 0.7) {
+      forecast = 'Heavy rain and thunderstorms expected.';
+    } else if (rainProbability > 0.3) {
+      forecast = 'Chance of scattered showers.';
+    }
+    if (windSpeed > 50) {
+      forecast += ' Strong winds are likely.';
+    } else if (windSpeed > 20) {
+      forecast += ' A bit breezy.';
+    }
+    if (temperature < 0) {
+      forecast += ' Freezing temperatures.';
+    } else if (temperature > 30) {
+      forecast += ' Very hot day.';
+    }
+
+    const weatherData: WeatherData = {
+      temperature,
+      rainProbability,
+      windSpeed,
+      forecast,
+    };
+
+    const analysisResult = await getSafetyAnalysis(values, weatherData);
     setResult(analysisResult);
     setLoading(false);
   };

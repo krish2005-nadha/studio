@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SafetyAssessmentProps {
   data: GenerateSafetyAssessmentOutput;

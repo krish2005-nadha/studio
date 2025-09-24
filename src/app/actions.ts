@@ -28,52 +28,24 @@ function getRandomInt(min: number, max: number) {
 }
 
 export async function getSafetyAnalysis(
-  values: FormSchema
+  values: FormSchema,
+  weatherData: WeatherData
 ): Promise<ActionResult> {
-  // Simulate weather prediction
-  const temperature = getRandomInt(-5, 35);
-  const rainProbability = Math.random();
-  const windSpeed = getRandomInt(0, 100);
-
-  let forecast = 'Clear skies.';
-  if (rainProbability > 0.7) {
-    forecast = 'Heavy rain and thunderstorms expected.';
-  } else if (rainProbability > 0.3) {
-    forecast = 'Chance of scattered showers.';
-  }
-  if (windSpeed > 50) {
-    forecast += ' Strong winds are likely.';
-  } else if (windSpeed > 20) {
-    forecast += ' A bit breezy.';
-  }
-  if (temperature < 0) {
-    forecast += ' Freezing temperatures.';
-  } else if (temperature > 30) {
-    forecast += ' Very hot day.';
-  }
-
-  const weatherData: WeatherData = {
-    temperature,
-    rainProbability,
-    windSpeed,
-    forecast,
-  };
-
   const [assessment, summary] = await Promise.all([
     generateSafetyAssessment({
-      temperature,
-      rainProbability,
-      windSpeed,
-      forecast,
+      temperature: weatherData.temperature,
+      rainProbability: weatherData.rainProbability,
+      windSpeed: weatherData.windSpeed,
+      forecast: weatherData.forecast,
     }),
     summarizeWeatherForecast({
       location: values.location,
       date: values.date.toLocaleDateString(),
       time: values.time,
-      temperature,
-      rainPercentage: Math.round(rainProbability * 100),
-      windSpeed,
-      forecast,
+      temperature: weatherData.temperature,
+      rainPercentage: Math.round(weatherData.rainProbability * 100),
+      windSpeed: weatherData.windSpeed,
+      forecast: weatherData.forecast,
     }),
   ]);
 
