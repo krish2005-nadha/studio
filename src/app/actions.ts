@@ -2,43 +2,16 @@
 
 import type { LocationFormSchema, RouteFormSchema } from '@/app/schemas';
 import type { WeatherData } from '@/app/schemas';
+import type { LocationAnalysisResult, RouteAnalysisResult } from './types';
 import {
-  generateSafetyAssessment,
-  GenerateSafetyAssessmentOutput,
+  generateSafetyAssessment
 } from '@/ai/flows/generate-safety-assessment';
 import {
-  summarizeWeatherForecast,
-  SummarizeWeatherForecastOutput,
+  summarizeWeatherForecast
 } from '@/ai/flows/summarize-weather-forecast';
 import {
   generateRouteSuggestion
 } from '@/ai/flows/generate-route-suggestion';
-
-// --- Types for Location Analysis ---
-export type LocationAnalysisResult = {
-  weather: WeatherData;
-  assessment: GenerateSafetyAssessmentOutput;
-  summary: SummarizeWeatherForecastOutput;
-};
-
-// --- Types for Route Analysis ---
-type RouteAnalysis<T> = {
-  start: T;
-  destination: T;
-  overall: T;
-};
-
-type SingleRouteAnalysis<T> = {
-  start: T;
-  destination: T;
-}
-
-export type RouteAnalysisResult = {
-  weather: SingleRouteAnalysis<WeatherData>;
-  assessment: RouteAnalysis<GenerateSafetyAssessmentOutput>;
-  summary: SingleRouteAnalysis<SummarizeWeatherForecastOutput>;
-  routeSuggestion: string;
-};
 
 /**
  * Generates a safety analysis for a single location.
@@ -122,8 +95,9 @@ export async function getRouteAnalysis(
   const routeSuggestionOutput = await generateRouteSuggestion({
       startLocation: values.startLocation,
       endLocation: values.endLocation,
-      safetyBadge: overallAssessment.safetyBadge,
-      reasoning: `The overall safety is determined by the lower of the two location assessments. Start: ${assessmentStart.safetyBadge}. Destination: ${assessmentDestination.safetyBadge}. Justification: ${overallAssessment.reasoning}`,
+      assessmentStart: assessmentStart,
+      assessmentDestination: assessmentDestination,
+      overallSafetyBadge: overallAssessment.safetyBadge
   });
   
   // Simulate network delay
