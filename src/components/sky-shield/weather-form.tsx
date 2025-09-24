@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Loader2, MapPin, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, MapPin } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -31,66 +31,103 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formSchema, type FormSchema } from '@/app/schemas';
+import { locationFormSchema, routeFormSchema, type LocationFormSchema, type RouteFormSchema } from '@/app/schemas';
 
-interface WeatherFormProps {
-  onSubmit: (values: FormSchema) => void;
+type WeatherFormProps = {
   isLoading: boolean;
-}
+} & (
+  | { formType: 'location'; onSubmit: (values: LocationFormSchema) => void; }
+  | { formType: 'route'; onSubmit: (values: RouteFormSchema) => void; }
+);
 
-export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
-  const form = useForm<FormSchema>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      currentLocation: '',
-      destination: '',
+export function WeatherForm(props: WeatherFormProps) {
+  const { formType, onSubmit, isLoading } = props;
+  
+  const form = useForm<LocationFormSchema | RouteFormSchema>({
+    resolver: zodResolver(formType === 'location' ? locationFormSchema : routeFormSchema),
+    defaultValues: formType === 'location' ? {
+      location: '',
+      time: 'Afternoon',
+    } : {
+      startLocation: 'Chennai',
+      endLocation: 'Coimbatore',
       time: 'Afternoon',
     },
   });
+
+  const handleSubmit = (values: any) => {
+    onSubmit(values);
+  };
 
   return (
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-6 w-6 text-primary" />
-          <span>Plan Your Pride</span>
+          <span>
+            {formType === 'location' ? 'Event Location' : 'Plan Your Journey'}
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="currentLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Parade Start" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    The starting point of your event or journey.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="destination"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Destination</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Festival Grounds" {...field} />
-                  </FormControl>
-                   <FormDescription>
-                    The ending point of your event or journey.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {formType === 'location' && (
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Pride Festival Main Stage" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      The location of your event.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {formType === 'route' && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="startLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Location</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Chennai" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The starting point of your journey.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="endLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destination</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Coimbatore" {...field} />
+                      </FormControl>
+                       <FormDescription>
+                        The ending point of your journey.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}

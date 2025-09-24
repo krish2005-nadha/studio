@@ -1,6 +1,6 @@
 'use server';
 
-import type { FormSchema } from '@/app/schemas';
+import type { LocationFormSchema, RouteFormSchema } from '@/app/schemas';
 import type { WeatherData } from '@/app/schemas';
 import {
   generateSafetyAssessment,
@@ -14,52 +14,91 @@ import {
   generateRouteSuggestion
 } from '@/ai/flows/generate-route-suggestion';
 
-type AnalysisResult<T> = {
-  current: T;
+// --- Types for Location Analysis ---
+export type LocationAnalysisResult = {
+  weather: WeatherData;
+  assessment: GenerateSafetyAssessmentOutput;
+  summary: SummarizeWeatherForecastOutput;
+};
+
+// --- Types for Route Analysis ---
+type RouteAnalysis<T> = {
+  start: T;
   destination: T;
   overall: T;
 };
 
-type SingleAnalysisResult<T> = {
-  current: T;
+type SingleRouteAnalysis<T> = {
+  start: T;
   destination: T;
 }
 
-export type ActionResult = {
-  weather: SingleAnalysisResult<WeatherData>;
-  assessment: AnalysisResult<GenerateSafetyAssessmentOutput>;
-  summary: SingleAnalysisResult<SummarizeWeatherForecastOutput>;
-  route?: string;
+export type RouteAnalysisResult = {
+  weather: SingleRouteAnalysis<WeatherData>;
+  assessment: RouteAnalysis<GenerateSafetyAssessmentOutput>;
+  summary: SingleRouteAnalysis<SummarizeWeatherForecastOutput>;
+  routeSuggestion: string;
 };
 
-// Helper function to create a default/empty safety assessment
-const createDefaultAssessment = (): GenerateSafetyAssessmentOutput => ({
-  safetyBadge: 'Safe',
-  probabilityScore: 1,
-  reasoning: 'Default safe assessment.',
-});
-
-
-export async function getSafetyAnalysis(
-  values: FormSchema,
-  weatherDataCurrent: WeatherData,
-  weatherDataDestination: WeatherData
-): Promise<ActionResult> {
-  const [assessmentCurrent, summaryCurrent, assessmentDestination, summaryDestination] = await Promise.all([
+/**
+ * Generates a safety analysis for a single location.
+ */
+export async function getLocationAnalysis(
+  values: LocationFormSchema,
+  weatherData: WeatherData
+): Promise<LocationAnalysisResult> {
+  const [assessment, summary] = await Promise.all([
     generateSafetyAssessment({
-      temperature: weatherDataCurrent.temperature,
-      rainProbability: weatherDataCurrent.rainProbability,
-      windSpeed: weatherDataCurrent.windSpeed,
-      forecast: weatherDataCurrent.forecast,
+      temperature: weatherData.temperature,
+      rainProbability: weatherData.rainProbability,
+      windSpeed: weatherData.windSpeed,
+      forecast: weatherData.forecast,
     }),
     summarizeWeatherForecast({
-      location: values.currentLocation,
+      location: values.location,
       date: values.date.toLocaleDateString(),
       time: values.time,
-      temperature: weatherDataCurrent.temperature,
-      rainPercentage: Math.round(weatherDataCurrent.rainProbability * 100),
-      windSpeed: weatherDataCurrent.windSpeed,
-      forecast: weatherDataCurrent.forecast,
+      temperature: weatherData.temperature,
+      rainPercentage: Math.round(weatherData.rainProbability * 100),
+      windSpeed: weatherData.windSpeed,
+      forecast: weatherData.forecast,
+    }),
+  ]);
+
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  return {
+    weather: weatherData,
+    assessment: assessment,
+    summary: summary,
+  };
+}
+
+
+/**
+ * Generates a safety analysis and route suggestion for a journey.
+ */
+export async function getRouteAnalysis(
+  values: RouteFormSchema,
+  weatherDataStart: WeatherData,
+  weatherDataDestination: WeatherData
+): Promise<RouteAnalysisResult> {
+  const [assessmentStart, summaryStart, assessmentDestination, summaryDestination] = await Promise.all([
+    generateSafetyAssessment({
+      temperature: weatherDataStart.temperature,
+      rainProbability: weatherDataStart.rainProbability,
+      windSpeed: weatherDataStart.windSpeed,
+      forecast: weatherDataStart.forecast,
+    }),
+    summarizeWeatherForecast({
+      location: values.startLocation,
+      date: values.date.toLocaleDateString(),
+      time: values.time,
+      temperature: weatherDataStart.temperature,
+      rainPercentage: Math.round(weatherDataStart.rainProbability * 100),
+      windSpeed: weatherDataStart.windSpeed,
+      forecast: weatherDataStart.forecast,
     }),
     generateSafetyAssessment({
       temperature: weatherDataDestination.temperature,
@@ -68,7 +107,7 @@ export async function getSafetyAnalysis(
       forecast: weatherDataDestination.forecast,
     }),
     summarizeWeatherForecast({
-      location: values.destination,
+      location: values.endLocation,
       date: values.date.toLocaleDateString(),
       time: values.time,
       temperature: weatherDataDestination.temperature,
@@ -78,33 +117,32 @@ export async function getSafetyAnalysis(
     }),
   ]);
 
-  const overallAssessment = assessmentCurrent.probabilityScore < assessmentDestination.probabilityScore ? assessmentCurrent : assessmentDestination;
+  const overallAssessment = assessmentStart.probabilityScore < assessmentDestination.probabilityScore ? assessmentStart : assessmentDestination;
 
   const routeSuggestionOutput = await generateRouteSuggestion({
-      startLocation: values.currentLocation,
-      endLocation: values.destination,
+      startLocation: values.startLocation,
+      endLocation: values.endLocation,
       safetyBadge: overallAssessment.safetyBadge,
-      reasoning: `The overall safety is determined by the lower of the two location assessments. Current location: ${assessmentCurrent.safetyBadge}. Destination: ${assessmentDestination.safetyBadge}. Justification: ${overallAssessment.reasoning}`,
+      reasoning: `The overall safety is determined by the lower of the two location assessments. Start: ${assessmentStart.safetyBadge}. Destination: ${assessmentDestination.safetyBadge}. Justification: ${overallAssessment.reasoning}`,
   });
-  const route = routeSuggestionOutput.routeSuggestion;
-
+  
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
   return {
     weather: {
-      current: weatherDataCurrent,
+      start: weatherDataStart,
       destination: weatherDataDestination,
     },
     assessment: {
-      current: assessmentCurrent,
+      start: assessmentStart,
       destination: assessmentDestination,
       overall: overallAssessment,
     },
     summary: {
-      current: summaryCurrent,
+      start: summaryStart,
       destination: summaryDestination,
     },
-    route,
+    routeSuggestion: routeSuggestionOutput.routeSuggestion,
   };
 }
