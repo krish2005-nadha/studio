@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { ActionResult, FormSchema } from '@/app/actions';
+import type { ActionResult } from '@/app/actions';
 import { getSafetyAnalysis } from '@/app/actions';
 import { WeatherForm } from '@/components/sky-shield/weather-form';
 import { ResultSkeletons } from '@/components/sky-shield/loading-skeletons';
@@ -10,6 +10,7 @@ import { SafetyAssessment } from './safety-assessment';
 import { RoutePlanner } from './route-planner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import type { FormSchema } from '@/app/schemas';
 
 export default function SkyShieldClient() {
   const [loading, setLoading] = useState(false);

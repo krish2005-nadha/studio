@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Droplets, Sun, Thermometer, Wind } from 'lucide-react';
-import { WeatherData } from '@/app/actions';
+import { WeatherData } from '@/app/schemas';
 import { WeatherIcon } from './weather-icon';
 import type { SummarizeWeatherForecastOutput } from '@/ai/flows/summarize-weather-forecast';
 

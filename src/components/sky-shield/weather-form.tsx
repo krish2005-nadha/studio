@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { formSchema, type FormSchema } from '@/app/actions';
+import { formSchema, type FormSchema } from '@/app/schemas';
 import { Separator } from '../ui/separator';
 
 interface WeatherFormProps {
