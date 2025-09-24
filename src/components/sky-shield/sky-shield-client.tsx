@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ActionResult } from '@/app/actions';
 import { getSafetyAnalysis } from '@/app/actions';
 import { WeatherForm } from '@/components/sky-shield/weather-form';
@@ -21,6 +21,11 @@ function getRandomInt(min: number, max: number) {
 export default function SkyShieldClient() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ActionResult | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleFormSubmit = async (values: FormSchema) => {
     setLoading(true);
@@ -59,6 +64,10 @@ export default function SkyShieldClient() {
     setResult(analysisResult);
     setLoading(false);
   };
+  
+  if (!isMounted) {
+    return <ResultSkeletons />;
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
