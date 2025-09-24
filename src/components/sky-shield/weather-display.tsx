@@ -5,17 +5,18 @@ import { WeatherIcon } from './weather-icon';
 import type { SummarizeWeatherForecastOutput } from '@/ai/flows/summarize-weather-forecast';
 
 interface WeatherDisplayProps {
+  title: string;
   data: WeatherData;
   summary: SummarizeWeatherForecastOutput;
 }
 
-export function WeatherDisplay({ data, summary }: WeatherDisplayProps) {
+export function WeatherDisplay({ title, data, summary }: WeatherDisplayProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Sun className="h-6 w-6 text-primary" />
-          <span>Weather Prediction</span>
+          <span>Weather Prediction: {title}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">

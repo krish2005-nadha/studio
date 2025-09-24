@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SkyShield: AI Weather Safety Planner',
-  description: 'AI-powered event and journey weather safety planner',
+  title: 'Will It Rain On My Pride?',
+  description: 'AI-powered weather safety planner for your events and journeys',
 };
 
 export default function RootLayout({

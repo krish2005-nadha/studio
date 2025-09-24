@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Loader2, MapPin, Clock, Route } from 'lucide-react';
+import { Calendar as CalendarIcon, Loader2, MapPin, Clock } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,6 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formSchema, type FormSchema } from '@/app/schemas';
-import { Separator } from '../ui/separator';
 
 interface WeatherFormProps {
   onSubmit: (values: FormSchema) => void;
@@ -43,10 +42,9 @@ export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      location: '',
+      currentLocation: '',
+      destination: '',
       time: 'Afternoon',
-      startLocation: '',
-      endLocation: '',
     },
   });
 
@@ -55,7 +53,7 @@ export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-6 w-6 text-primary" />
-          <span>Plan your Day</span>
+          <span>Plan Your Pride</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -63,15 +61,31 @@ export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="location"
+              name="currentLocation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>Current Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., San Francisco, CA" {...field} />
+                    <Input placeholder="e.g., Parade Start" {...field} />
                   </FormControl>
                   <FormDescription>
-                    City or address for the weather forecast.
+                    The starting point of your event or journey.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="destination"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Destination</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Festival Grounds" {...field} />
+                  </FormControl>
+                   <FormDescription>
+                    The ending point of your event or journey.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -141,42 +155,6 @@ export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
                 )}
               />
             </div>
-            
-            <Separator />
-            
-            <div>
-              <h3 className="text-sm font-medium flex items-center gap-2 mb-4 text-muted-foreground">
-                <Route className="h-4 w-4" /> Optional: Route Planner
-              </h3>
-              <div className="space-y-4">
-                 <FormField
-                  control={form.control}
-                  name="startLocation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Home" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="endLocation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Work" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
@@ -185,7 +163,7 @@ export function WeatherForm({ onSubmit, isLoading }: WeatherFormProps) {
                   Analyzing...
                 </>
               ) : (
-                'Get Safety Analysis'
+                'Get Weather Analysis'
               )}
             </Button>
           </form>

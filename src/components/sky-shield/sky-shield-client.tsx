@@ -10,7 +10,7 @@ import { SafetyAssessment } from './safety-assessment';
 import { RoutePlanner } from './route-planner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
-import type { ActionResult } from '@/app/schemas';
+import type { ActionResult } from '@/app/actions';
 
 // This function is now defined inside the component to avoid hydration issues
 // and is only called on the client side.
@@ -65,10 +65,11 @@ export default function SkyShieldClient() {
     setResult(null);
 
     // Weather data is now simulated on the client side just before the API call
-    const weatherData = getSimulatedWeatherData();
+    const weatherDataCurrent = getSimulatedWeatherData();
+    const weatherDataDestination = getSimulatedWeatherData();
 
     try {
-      const analysisResult = await getSafetyAnalysis(values, weatherData);
+      const analysisResult = await getSafetyAnalysis(values, weatherDataCurrent, weatherDataDestination);
       setResult(analysisResult);
     } catch (error) {
       console.error("Failed to get safety analysis:", error);
@@ -86,10 +87,10 @@ export default function SkyShieldClient() {
     <div className="container mx-auto p-4 md:p-8">
       <div className="text-center mb-8 md:mb-12">
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter">
-          Welcome to SkyShield
+          Welcome to "Will It Rain On My Pride?"
         </h2>
         <p className="mt-2 text-lg md:text-xl max-w-3xl mx-auto text-muted-foreground">
-          Planning a hike, a vacation, or a simple day out? Enter your destination and date, and our AI will analyze weather patterns to give you a personalized safety forecast. Know the likelihood of adverse conditions and travel with confidence.
+         Whether you're marching, celebrating, or just enjoying the day, get a personalized AI weather forecast for your Pride event. Enter your current location and destination to ensure you're prepared for anything, from scorching sun to sudden showers.
         </p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-5 lg:gap-8 xl:gap-12">
@@ -119,9 +120,17 @@ export default function SkyShieldClient() {
                 transition={{ duration: 0.5, ease: 'easeOut' }}
                 className="space-y-6"
               >
-                <WeatherDisplay data={result.weather} summary={result.summary} />
-                <SafetyAssessment data={result.assessment} />
-                {result.route && <RoutePlanner data={result.route} safetyBadge={result.assessment.safetyBadge} />}
+                <WeatherDisplay title="Current Location" data={result.weather.current} summary={result.summary.current} />
+                <SafetyAssessment data={result.assessment.current} />
+
+                <div className="py-4">
+                  <div className="w-full border-t border-dashed border-border"></div>
+                </div>
+
+                <WeatherDisplay title="Destination" data={result.weather.destination} summary={result.summary.destination} />
+                <SafetyAssessment data={result.assessment.destination} />
+
+                {result.route && <RoutePlanner data={result.route} safetyBadge={result.assessment.overall.safetyBadge} />}
               </motion.div>
             )}
             {!loading && !result && (
