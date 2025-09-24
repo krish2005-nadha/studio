@@ -10,11 +10,17 @@ import { SafetyAssessment } from './safety-assessment';
 import { RoutePlanner } from './route-planner';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
-import type { LocationAnalysisResult, RouteAnalysisResult } from '@/app/actions';
+import type { LocationAnalysisResult, RouteAnalysisResult } from '@/app/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
-// This function simulates weather data and is called on the client side.
+/**
+ * NOTE: This function simulates weather data for the Proof-of-Concept.
+ * In a production application, this would be replaced with a call to a real
+ * weather API (e.g., OpenWeatherMap, AccuWeather) to get live data based
+ * on the user's location and date input. The data is generated on the client
+ * to avoid hydration errors that can occur from server/client mismatches.
+ */
 function getSimulatedWeatherData(): WeatherData {
   const getRandomInt = (min: number, max: number) => {
     min = Math.ceil(min);
