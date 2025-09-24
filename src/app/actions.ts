@@ -1,7 +1,8 @@
 
 'use server';
 
-import type { FormSchema, WeatherData } from '@/app/schemas';
+import type { FormSchema } from '@/app/schemas';
+import type { WeatherData } from '@/app/schemas';
 import {
   generateSafetyAssessment,
   GenerateSafetyAssessmentOutput,
@@ -10,8 +11,9 @@ import {
   summarizeWeatherForecast,
   SummarizeWeatherForecastOutput,
 } from '@/ai/flows/summarize-weather-forecast';
-import { z } from 'zod';
-import { formSchema } from '@/app/schemas';
+import {
+  generateRouteSuggestion
+} from '@/ai/flows/generate-route-suggestion';
 
 
 export type ActionResult = {
@@ -45,13 +47,13 @@ export async function getSafetyAnalysis(
 
   let route: string | undefined = undefined;
   if (values.startLocation && values.endLocation) {
-    if (assessment.safetyBadge === 'Postpone') {
-      route = `Travel from ${values.startLocation} to ${values.endLocation} is not recommended due to hazardous weather conditions.`;
-    } else if (assessment.safetyBadge === 'Risky') {
-      route = `Exercise caution when traveling from ${values.startLocation} to ${values.endLocation}. ${assessment.reasoning}`;
-    } else {
-      route = `The route from ${values.startLocation} to ${values.endLocation} looks clear. Enjoy your journey!`;
-    }
+    const routeSuggestionOutput = await generateRouteSuggestion({
+        startLocation: values.startLocation,
+        endLocation: values.endLocation,
+        safetyBadge: assessment.safetyBadge,
+        reasoning: assessment.reasoning,
+    });
+    route = routeSuggestionOutput.routeSuggestion;
   }
 
   // Simulate network delay
